@@ -3,7 +3,7 @@ PACK_CONTENTS=dir*
 
 default: none
 
-all: unionfs
+all: unionfs lvm layout.pdf
 
 pack.tar: ${PACK_CONTENTS}
 	tar cvf $@ $^
@@ -53,6 +53,8 @@ lvm:
 	mkdir -p fs1
 	mount /dev/my_vg/*0 fs1
 	
+%.pdf: %.svg
+	convert -density 300 layout.svg layout.pdf
 
 clean_lvm:
 	-umount fs1 
