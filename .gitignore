@@ -4,9 +4,11 @@ dirA
 dirB
 dirC
 dirD
-
+union
+union/*
 *.sfs
 *.img
+*.pdf
 
 
 
