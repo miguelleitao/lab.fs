@@ -3,7 +3,7 @@ PACK_CONTENTS=dir*
 
 default: none
 
-all: unionfs lvm layout.pdf
+all: unionfs3 lvm layout.pdf
 
 pack.tar: ${PACK_CONTENTS}
 	tar cvf $@ $^
@@ -28,22 +28,29 @@ dirB:
 	mkdir -p $@
 	cp -a dirB_src/* $@/
 
-dirC:
+dirC: dirD/dirC
+
+dirD/dirC: dirD
 	mkdir -p $@
+	mkdir -p dirD/work3
+	cp -a dirC_src/* $@/
 
 dirD: 
 	mkdir -p $@
-	mount -t tmpfs dird $@
+	@mountpoint $@ >/dev/null || (mount -t tmpfs dird $@)
 
-union:
-	mkdir union
+work2:
+	mkdir -p $@
 
-unionfs: union dirA dirB dirC
-	@umount -q dirC || true
-	mount -t overlay -o lowerdir=dirA,upperdir=dirB,workdir=dirC none $<
-	cp -f dirC_src/* union/
+union2 union3:
+	mkdir -p $@
+
+unionfs2: union2 dirA dirB work2
+	@mountpoint union2 >/dev/null || (mount -t overlay -o lowerdir=dirA,upperdir=dirB,workdir=work2 none $<)
 	
-	
+unionfs3: union3 unionfs2 dirC
+	@mountpoint union3 >/dev/null || (mount -t overlay -o lowerdir=union2,upperdir=dirD/dirC,workdir=dirD/work3 none $<)
+
 lvm:
 	pvcreate /dev/sda1
 	pvcreate /dev/sda2
@@ -65,15 +72,14 @@ clean_lvm:
 	pvremove /dev/sda2
 
 clean:
-	umount -l union || true
-	umount -l dirA  || true
-	umount -l dirB  || true
-	umount -l dirC  || true
+	-umount -l union3
+	-umount -l union2
+	-umount -l dirA
+	-umount -l dirD
 	rm -rf dirA.sfs dirA
 	rm -rf dirB.ext2 dirB
 	rm -rf dirC dirD
-	rm -rf union
-	rm -f pack.*
+	rm -rf union2 union3 work2
 
 	
 
