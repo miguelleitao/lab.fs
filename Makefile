@@ -80,6 +80,7 @@ clean:
 	rm -rf dirB.ext2 dirB
 	rm -rf dirC dirD
 	rm -rf union2 union3 work2
+	rm -f *.pdf
 
 	
 
