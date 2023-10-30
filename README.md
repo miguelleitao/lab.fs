@@ -5,7 +5,10 @@
 
 ### Layered filesystem
 ```
-make unionfs
+make unionfs2
+ls union2
+make unionfs3
+ls union3
 ```
 
 #### Cleanup
