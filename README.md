@@ -13,7 +13,7 @@ ls union3
 
 #### Cleanup
 ```
-make clean
+make clean_unionfs
 ```
 
 ### LVM
