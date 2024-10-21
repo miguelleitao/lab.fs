@@ -1,5 +1,6 @@
 ﻿
 PACK_CONTENTS=dir*
+DISK=/dev/sda
 
 default: none
 
@@ -51,11 +52,13 @@ unionfs2: union2 dirA dirB work2
 unionfs3: union3 unionfs2 dirC
 	mountpoint union3 >/dev/null || (mount -t overlay -o lowerdir=union2,upperdir=dirD/dirC,workdir=dirD/work3 none $<)
 
-lvm:
-	pvcreate /dev/sda1
-	pvcreate /dev/sda2
-	vgcreate my_vg /dev/sda1 /dev/sda2
-	lvcreate --size 320M my_vg
+lvm: $(DISK)1 $(DISK)2
+	@!( grep -qs ^$(DISK)1 /proc/mounts && echo "$(DISK)1 is already mounted." )
+	@!( grep -qs ^$(DISK)2 /proc/mounts && echo "$(DISK)2 is already mounted." )
+	pvcreate $(DISK)1
+	pvcreate $(DISK)2
+	vgcreate my_vg $(DISK)1 $(DISK)2
+	lvcreate --size 3.2G --wipesignatures y my_vg
 	mkfs -t ext2 /dev/my_vg/*0
 	mkdir -p fs1
 	mount /dev/my_vg/*0 fs1
@@ -66,12 +69,13 @@ lvm:
 clean_lvm:
 	-umount fs1 
 	-rmdir fs1
-	-lvremove /dev/my_vg/* 
+	-wipefs -a /dev/my_vg/*0
+	-lvremove -y /dev/my_vg/* 
 	-vgremove my_vg
-	pvremove /dev/sda1
-	pvremove /dev/sda2
+	-pvremove $(DISK)1
+	-pvremove $(DISK)2
 
-clean:
+clean_unionfs:
 	-umount -l union3
 	-umount -l union2
 	-umount -l dirA
@@ -82,5 +86,4 @@ clean:
 	rm -rf union2 union3 work2
 	rm -f *.pdf
 
-	
-
+clean: clean_unionfs clean_lvm
