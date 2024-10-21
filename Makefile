@@ -46,10 +46,10 @@ union2 union3:
 	mkdir -p $@
 
 unionfs2: union2 dirA dirB work2
-	@mountpoint union2 >/dev/null || (mount -t overlay -o lowerdir=dirA,upperdir=dirB,workdir=work2 none $<)
+	mountpoint union2 >/dev/null || (mount -t overlay -o lowerdir=dirA,upperdir=dirB,workdir=work2 none $<)
 	
 unionfs3: union3 unionfs2 dirC
-	@mountpoint union3 >/dev/null || (mount -t overlay -o lowerdir=union2,upperdir=dirD/dirC,workdir=dirD/work3 none $<)
+	mountpoint union3 >/dev/null || (mount -t overlay -o lowerdir=union2,upperdir=dirD/dirC,workdir=dirD/work3 none $<)
 
 lvm:
 	pvcreate /dev/sda1
