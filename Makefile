@@ -84,6 +84,6 @@ clean_unionfs:
 	rm -rf dirB.ext2 dirB
 	rm -rf dirC dirD
 	rm -rf union2 union3 work2
-	rm -f *.pdf
+	rm -f ufs_layout.pdf
 
 clean: clean_unionfs clean_lvm
