@@ -4,7 +4,7 @@ DISK?=/dev/sda
 
 default: none
 
-all: unionfs3 lvm layout.pdf
+all: unionfs3 lvm ufs_layout.pdf
 
 pack.tar: ${PACK_CONTENTS}
 	tar cvf $@ $^
