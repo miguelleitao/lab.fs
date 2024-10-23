@@ -1,6 +1,6 @@
 ﻿
 PACK_CONTENTS=dir*
-DISK=/dev/sda
+DISK?=/dev/sda
 
 default: none
 
@@ -19,7 +19,7 @@ pack.cpio:
 	find . -name "*.txt" |cpio -o >$@
 
 dirA.sfs: dirA_src
-	mksquashfs $< $@
+	mksquashfs $< $@ -quiet
 
 dirA: dirA.sfs 
 	mkdir -p $@
@@ -47,10 +47,10 @@ union2 union3:
 	mkdir -p $@
 
 unionfs2: union2 dirA dirB work2
-	mountpoint union2 >/dev/null || (mount -t overlay -o lowerdir=dirA,upperdir=dirB,workdir=work2 none $<)
+	mountpoint -q union2 || (mount -t overlay -o lowerdir=dirA,upperdir=dirB,workdir=work2 none $<)
 	
 unionfs3: union3 unionfs2 dirC
-	mountpoint union3 >/dev/null || (mount -t overlay -o lowerdir=union2,upperdir=dirD/dirC,workdir=dirD/work3 none $<)
+	mountpoint -q union3 || (mount -t overlay -o lowerdir=union2,upperdir=dirD/dirC,workdir=dirD/work3 none $<)
 
 lvm: $(DISK)1 $(DISK)2
 	@!( grep -qs ^$(DISK)1 /proc/mounts && echo "$(DISK)1 is already mounted." )
@@ -70,10 +70,10 @@ clean_lvm:
 	-umount fs1 
 	-rmdir fs1
 	-wipefs -a /dev/my_vg/*0
-	-lvremove -y /dev/my_vg/* 
-	-vgremove my_vg
-	-pvremove $(DISK)1
-	-pvremove $(DISK)2
+	lvremove -y /dev/my_vg/* || true
+	vgremove my_vg || true
+	pvremove $(DISK)1 || true
+	pvremove $(DISK)2 || true
 
 clean_unionfs:
 	-umount -l union3
