@@ -4,7 +4,7 @@ DISK?=/dev/sda
 
 default: none
 
-all: unionfs3 lvm ufs_layout.pdf
+all: unionfs3 lvm ufs2_layout.pdf ufs3_layout.pdf
 
 pack.tar: ${PACK_CONTENTS}
 	tar cvf $@ $^
@@ -46,11 +46,11 @@ work2:
 union2 union3:
 	mkdir -p $@
 
-unionfs2: union2 dirA dirB work2
-	mountpoint -q union2 || (mount -t overlay -o lowerdir=dirA,upperdir=dirB,workdir=work2 none $<)
+unionfs2: dirA dirB work2 union2
+	mountpoint -q union2 || (mount -t overlay -o lowerdir=dirA,upperdir=dirB,workdir=work2 none union2)
 	
-unionfs3: union3 unionfs2 dirC
-	mountpoint -q union3 || (mount -t overlay -o lowerdir=union2,upperdir=dirD/dirC,workdir=dirD/work3 none $<)
+unionfs3: unionfs2 dirC union3
+	mountpoint -q union3 || (mount -t overlay -o lowerdir=union2,upperdir=dirD/dirC,workdir=dirD/work3 none union3)
 
 lvm: $(DISK)1 $(DISK)2
 	@!( grep -qs ^$(DISK)1 /proc/mounts && echo "$(DISK)1 is already mounted." )
