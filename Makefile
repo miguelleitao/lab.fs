@@ -1,9 +1,13 @@
 ﻿
 PACK_CONTENTS=dir*
 DISK?=/dev/sda
+IMAGICK=magick
 
 default: none
 
+$DISK:
+	@echo "Disk ${DISK} not found."
+	
 all: unionfs3 lvm ufs2_layout.pdf ufs3_layout.pdf
 
 pack.tar: ${PACK_CONTENTS}
@@ -22,7 +26,7 @@ dirA.sfs: dirA_src
 	mksquashfs $< $@ -quiet
 
 dirA: dirA.sfs 
-	mkdir -p $@
+	@mkdir -p $@
 	@mountpoint $@ >/dev/null || (mount $< $@ && echo mount $< $@)
 
 dirB:
@@ -39,6 +43,9 @@ dirD/dirC: dirD
 dirD: 
 	mkdir -p $@
 	@mountpoint $@ >/dev/null || (mount -t tmpfs dird $@)
+
+dirs: dirA dirB dirC
+	./showDirs.sh
 
 work2:
 	mkdir -p $@
@@ -58,13 +65,13 @@ lvm: $(DISK)1 $(DISK)2
 	pvcreate $(DISK)1
 	pvcreate $(DISK)2
 	vgcreate my_vg $(DISK)1 $(DISK)2
-	lvcreate --size 3.2G --wipesignatures y my_vg
+	lvcreate --size 600M --wipesignatures y my_vg
 	mkfs -t ext2 /dev/my_vg/*0
 	mkdir -p fs1
 	mount /dev/my_vg/*0 fs1
 	
 %.pdf: %.svg
-	convert -density 300 layout.svg layout.pdf
+	${IMAGICK} -density 300 $^ $@
 
 clean_lvm:
 	-umount fs1 
